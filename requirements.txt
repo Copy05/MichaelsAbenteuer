@@ -1,0 +1,2 @@
+# The Game Engine itself is enough
+pygame==2.5.2

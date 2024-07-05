@@ -1,0 +1,12 @@
+# Pythor
+__pycache__/
+debug.py
+
+# IMPROVED VERSION (not for public yet)
+withsplash.py
+/images/splash.png
+/sounds/deluxe_title_screen.mp3
+
+# Pygame Wrapper from myself
+copygame.py
+*.db
