@@ -6,6 +6,8 @@
 
 </div>
 
+<h3 style="text-align: center">Please drink responsibly.</h3>
+
 **Description**<br>
 You are Michael a middle aged alcoholic dude that is taking on a adventure to find the Legendary **BEER** unfortunally he encounters fruits something he's allergic to.
 
@@ -28,6 +30,17 @@ Old Flash Games especially ran on Old Mashines were laggy too
 - Get Drunk!
 - He's allergic to Apples
 - **How High can you score?**
+
+# How to play
+
+**Controlls: Left & Right Arrow Keys**
+
+**Installation**:
+```bash
+git clone https://github.com/Copy05/MichaelsAbenteuer.git
+pip install pygame
+python game.py
+```
 
 # Credits / Special Thanks
 

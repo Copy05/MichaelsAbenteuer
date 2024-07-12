@@ -57,13 +57,15 @@ play_noice = False
 last_noice_played_time = 0
 last_life_text_displayed = False
 collected100pts1up = False
-daytime = False
+daytime = True
 
 # Chances
 vodka_spawn_rate = 0
 paulaner_spawn_rate = 0
+bitburger_spawn_rate = 0
 spawn_chance_1up = 0.000
 apple_chance = 0.50
+additional_powerup_chance = 0
 
 # Milestones
 last_score_milestone = 0
@@ -79,6 +81,20 @@ running = True
 paused = False
 font = pygame.font.SysFont(None, 36)
 
+def render_text_with_outline(text, font, color, outline_color, pos):
+    text_surface = font.render(text, True, color)
+    outline_surface = font.render(text, True, outline_color)
+    text_rect = text_surface.get_rect(center=pos)
+    
+    # Draw outline (shifted slightly)
+    screen.blit(outline_surface, (text_rect.x - 1, text_rect.y - 1))
+    screen.blit(outline_surface, (text_rect.x + 1, text_rect.y - 1))
+    screen.blit(outline_surface, (text_rect.x - 1, text_rect.y + 1))
+    screen.blit(outline_surface, (text_rect.x + 1, text_rect.y + 1))
+    
+    # Draw main text
+    screen.blit(text_surface, text_rect)
+
 # Function to convert screen to grayscale
 def grayscale(surface):
     arr = pygame.surfarray.pixels3d(surface)
@@ -87,35 +103,56 @@ def grayscale(surface):
     return pygame.surfarray.make_surface(arr)
 
 # Title screen loop
-show_title_screen = True
-while show_title_screen:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            show_title_screen = False
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            show_title_screen = False
+def show_title_screen():
+    flash_timer = 0
+    show_text = True
+    text_visible = True
+    show_title_screen = True
+    
+    while show_title_screen:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                show_title_screen = False
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                show_title_screen = False
 
-    # Draw title screen background
-    screen.blit(ts_bg_image, (0, 0))
+        # Draw title screen background
+        screen.blit(ts_bg_image, (0, 0))
 
-    # Draw game title
-    title_font = pygame.font.SysFont(None, 72)
-    title_text = title_font.render("Michaels Abenteuer", True, WHITE)
-    title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-    screen.blit(title_text, title_rect)
+        # Draw game title
+        title_font = pygame.font.SysFont(None, 72)
+        title_text = title_font.render("Michaels Abenteuer", True, WHITE)
+        title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        screen.blit(title_text, title_rect)
 
-    # Draw creator's name
-    creator_font = pygame.font.SysFont(None, 24)
-    creator_text = creator_font.render("(c) Copy05 2019", True, WHITE)
-    creator_rect = creator_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30))
-    screen.blit(creator_text, creator_rect)
+        # Draw creator's name
+        creator_font = pygame.font.SysFont(None, 24)
+        creator_text = creator_font.render("(c) Copy05 2019", True, WHITE)
+        creator_rect = creator_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30))
+        screen.blit(creator_text, creator_rect)
 
-    # Flip the display
-    pygame.display.flip()
+        # Flashing text "1 Credit. Press to play"
+        if text_visible:
+            flash_timer += 1
+            if flash_timer >= 0.5 * FPS:  # Flash every 0.5 seconds
+                flash_timer = 0
+                show_text = not show_text
+            if show_text:
+                text = "1 Credit. Press to play"
+                pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60)
+                render_text_with_outline(text, creator_font, YELLOW, BLACK, pos)
 
-    # Cap the frame rate
-    clock.tick(FPS)
+        # Flip the display
+        pygame.display.flip()
+
+        # Cap the frame rate
+        clock.tick(FPS)
+
+
+# Show Title Screen
+show_title_screen()
+
 
 # Game loop
 while running:
@@ -161,8 +198,8 @@ while running:
 
     # Spawn new items
     if len(items) < 10:  # Limit the number of items on screen
-        item_types = ['beer', 'beer2', "beer3", 'vodka', 'apple', 'double_points', 'vgr', '1up']
-        probabilities = [0.49, 0.29, paulaner_spawn_rate, vodka_spawn_rate, apple_chance, 0.002, 0.003, spawn_chance_1up]  # Example probabilities (49% beer, 39% beer2, 50% apple, 0.02% double points, 0.00% - 0.09% 1up)
+        item_types = ['beer', 'beer2', "beer3", 'vodka', 'beer4', 'apple', 'double_points', 'vgr', '1up']
+        probabilities = [0.49, 0.29, paulaner_spawn_rate, vodka_spawn_rate, bitburger_spawn_rate, apple_chance, 0.002 + additional_powerup_chance, 0.003 + additional_powerup_chance, spawn_chance_1up]  # Example probabilities (49% beer, 39% beer2, 50% apple, 0.02% double points, 0.00% - 0.09% 1up)
         
         
         item_type = random.choices(item_types, weights=probabilities)[0]
@@ -205,6 +242,11 @@ while running:
                 apple_chance += 0.001
             score += 8 if double_points_active else 4
             
+        elif hit.item_type == 'beer4':
+            if apple_chance < MAX_APPLE_CHANCE:
+                apple_chance += 0.001
+            score += 16 if double_points_active else 8
+            
         elif hit.item_type == 'apple':
             if not vgr_active:
                 player.lose_life()
@@ -241,23 +283,33 @@ while running:
     else:
         play_noice = False
         
-        
+    # ------------------------------------------------------------------------    
+    # MILESTONES (Infinitly):
     # Increasse Speed and Apple Chance for every 100 score and Unlock more stuff
+    # ------------------------------------------------------------------------    
     if score // 100 > last_score_milestone:
         
         apple_chance += 0.001
+        
+        # Increasse Additional Power Up Chance by 0,01% Capped at 2%
+        if additional_powerup_chance < 0.02:
+            additional_powerup_chance += 0.001
+            
         last_score_milestone = score // 100
         
         if player.lives < DEFAULT_LIFES:
             spawn_chance_1up += UP_POINT_INCREASE # +0,1% Spawn Rate for 1up
         
-        if last_score_milestone == 0:
+        if last_score_milestone == 1:
             paulaner_spawn_rate = 0.30 # Paulaner Spawn Rate: 30%
             apple_chance += 0.003
             
-        if last_score_milestone == 1:
+        if last_score_milestone == 2:
             vodka_spawn_rate = 0.25 # Vodka Spawn Rate: 25%
             apple_chance += 0.004
+            
+        if last_score_milestone == 5:
+            bitburger_spawn_rate = 0.22 # BitBurger Spawn Rate: 22%
         
         # Switch Between Day and Night Time
         if last_score_milestone % 9 == 0:
@@ -279,8 +331,9 @@ while running:
     
     # Draw Apple Protection status
     if vgr_active:
+        y_pos = 80 if double_points_active else 50
         vgr_text = font.render(f'Invincibility: 0:{vgr_timer // FPS:02}', True, YELLOW)
-        screen.blit(vgr_text, (10, 50))
+        screen.blit(vgr_text, (10, y_pos))
 
         # Update VGR timer
         vgr_timer -= 1

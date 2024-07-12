@@ -15,6 +15,8 @@ class Item(pygame.sprite.Sprite):
             self.image = pygame.image.load(os.path.join(IMAGE_PATH, 'beer2.jpg')).convert()
         elif self.item_type == 'beer3':
             self.image = pygame.image.load(os.path.join(IMAGE_PATH, 'paulaner.jpg')).convert()
+        elif self.item_type == 'beer4':
+            self.image = pygame.image.load(os.path.join(IMAGE_PATH, 'bitburger.jpg')).convert()
         elif self.item_type == 'vodka':
             self.image = pygame.image.load(os.path.join(IMAGE_PATH, 'vodka.jpg')).convert()
         elif self.item_type == 'apple':

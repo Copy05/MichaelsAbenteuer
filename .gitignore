@@ -6,6 +6,7 @@ debug.py
 withsplash.py
 /images/splash.png
 /sounds/deluxe_title_screen.mp3
+/sounds/deluxxe_title_screen.mp3
 
 # Pygame Wrapper from myself
 copygame.py
